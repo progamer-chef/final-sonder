@@ -33,7 +33,7 @@
           box-sizing: border-box; /* Make padding included in width/height calculation */
         
       }
-        .boombox {
+      .boombox {
           position: fixed;
           bottom: 20px;
           left: 50%;
@@ -48,15 +48,36 @@
       #videoSource {
         display: none;
       }
+      
+      /* Add play button for video */
+      #playButton {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 10px 20px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        z-index: 200;
+        display: none; /* Initially hidden, will show if video fails to autoplay */
+      }
     </style>
   </head>
   <body>
-    <!-- Add hidden video element with autoplay -->
+    <!-- Add play button -->
+    <button id="playButton">Click to Start Video</button>
+    
+    <!-- Add hidden video element with muted attribute for autoplay -->
     <video 
       id="videoSource" 
       loop 
       crossorigin="anonymous" 
       playsinline
+      muted
       autoplay>
       <source src="sonder_2_1.mp4" type="video/mp4">
       <!-- Replace with your actual video file -->
@@ -70,7 +91,7 @@
     <div id="textContainer">
       <div style="padding: 20px; max-width: 80%;">
         <h2>ソンダー</h2>
-        <p>「sonder」sonder(n) - the feeling one has on realizing that every other individual one sees has a life as full and real as one’s own, in which they are the central character and others, including oneself, have secondary or insignificant roles"</p>
+        <p>「sonder」sonder(n) - the feeling one has on realizing that every other individual one sees has a life as full and real as one's own, in which they are the central character and others, including oneself, have secondary or insignificant roles"</p>
         
         <p>i made this at a time in my life where I became almost paralyzed and was forced into recovery. my life lifes were completely side-tracked and as i recoverd, i looked at all my peers and friends flew by past me. i thought we were in this together. i thought we would succeed together. but of course, i shouldn't have expected them to wait for me. they were all concerned with their own lives. was it right of them to be concerned with mine?</p>
         
@@ -100,6 +121,7 @@
       
       // Video element - keeping video separate from audio
       const videoElement = document.getElementById('videoSource');
+      const playButton = document.getElementById('playButton');
       
       // Function to get a random audio file
       function getRandomAudio() {
@@ -139,13 +161,29 @@
               console.error('Audio playback failed:', error);
               // If autoplay is blocked, show message to user
               if (error.name === 'NotAllowedError') {
-                alert('Please enable autoplay to hear the music with the animation.');
+                alert('Please interact with the page first to enable audio playback.');
               }
             });
           }
           
           isPlaying = true;
         }
+      });
+      
+      // Add click handler for play button
+      playButton.addEventListener('click', function() {
+        // Unmute and play the video
+        videoElement.muted = false;
+        videoElement.play().then(() => {
+          // Hide the play button after successful play
+          playButton.style.display = 'none';
+          // Make sure the video texture updates
+          if (mainPanel && mainPanel.material && mainPanel.material.map) {
+            mainPanel.material.map.needsUpdate = true;
+          }
+        }).catch(error => {
+          console.error('Video play failed after click:', error);
+        });
       });
       
       let scene, camera, renderer;
@@ -289,9 +327,13 @@
           renderer.render(scene, camera);
         });
 
-        // Ensure video starts playing as soon as possible
-        videoElement.play().catch(error => {
+        // Try to start the video - if it fails, show the play button
+        videoElement.play().then(() => {
+          console.log('Video autoplay started successfully');
+        }).catch(error => {
           console.error('Video autoplay failed:', error);
+          // Show the play button if autoplay is not allowed
+          playButton.style.display = 'block';
           // Use fallback texture if video fails
           mainPanel.material.map = fallbackTexture;
           mainPanel.material.needsUpdate = true;
