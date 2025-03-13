@@ -65,11 +65,39 @@
         z-index: 200;
         display: none; /* Initially hidden, will show if video fails to autoplay */
       }
+      
+      /* Audio controls for video */
+      #audioControls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 150;
+        display: flex;
+        align-items: center;
+        font-family: monospace;
+      }
+      
+      #audioControls img {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+      }
     </style>
   </head>
   <body>
     <!-- Add play button -->
     <button id="playButton">Click to Start Video</button>
+    
+    <!-- Audio controls for video -->
+    <div id="audioControls">
+      <img id="audioIcon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBvbHlnb24gcG9pbnRzPSIxMSA1IDYgOSAyIDkgMiAxNSA2IDE1IDExIDE5IDExIDUiPjwvcG9seWdvbj48cGF0aCBkPSJNMTUuNTQgOC40NkE1IDUgMCAwIDEgMTkgMTNhNSA1IDAgMCAxLTMuNDYgNC41NCI+PC9wYXRoPjxwYXRoIGQ9Ik0xOS4wNyA0LjkzYTEwIDEwIDAgMCAxIDAgMTQuMTQiPjwvcGF0aD48L3N2Zz4=" alt="Audio">
+      <span>Turn On Audio</span>
+    </div>
     
     <!-- Add hidden video element with muted attribute for autoplay -->
     <video 
@@ -96,10 +124,9 @@
         <p>i made this at a time in my life where I became almost paralyzed and was forced into recovery. my life lifes were completely side-tracked and as i recoverd, i looked at all my peers and friends flew by past me. i thought we were in this together. i thought we would succeed together. but of course, i shouldn't have expected them to wait for me. they were all concerned with their own lives. was it right of them to be concerned with mine?</p>
         
         <p>
-        this footage is from leftover footage of a camp i was supposed to lead at. i had waited all year for this and all of a sudden i was bedridden. i had normally made camp montages as a way of showing love and gratitude for the kids. they all loved it. this year, i still did that, but after i finished that, i wanted to do something for myself. in a silly reason such as missing out on summer camp, i created this. 
+        this footage is from leftover footage of a camp i was supposed to lead at. i had waited all year for this and all of a sudden i was bedridden. i had normally made camp montages as a way of showing love and gratitude for the kids. they all loved it. this year, i still did that, but after i finished that, i wanted to do something for myself. in a silly reason such as missing out on summer camp, i created this.
         </p>
-        
-        <p>you can view the whole thing <a href="https://www.instagram.com/reel/CxChN8XOE6q/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank">here</a></p>
+        <p>you can view the original <a href="https://www.instagram.com/reel/CxChN8XOE6q/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank">here</a></p>
       </div>
     </div>
 
@@ -172,13 +199,18 @@
         }
       });
       
+      // Get audio controls elements
+      const audioControls = document.getElementById('audioControls');
+      const audioIcon = document.getElementById('audioIcon');
+      
       // Add click handler for play button
       playButton.addEventListener('click', function() {
-        // Unmute and play the video
-        videoElement.muted = false;
+        // Keep muted but play the video
         videoElement.play().then(() => {
           // Hide the play button after successful play
           playButton.style.display = 'none';
+          // Show audio controls after video starts
+          audioControls.style.display = 'flex';
           // Make sure the video texture updates
           if (mainPanel && mainPanel.material && mainPanel.material.map) {
             mainPanel.material.map.needsUpdate = true;
@@ -186,6 +218,21 @@
         }).catch(error => {
           console.error('Video play failed after click:', error);
         });
+      });
+      
+      // Add click handler for audio controls
+      audioControls.addEventListener('click', function() {
+        // Toggle muted state
+        videoElement.muted = !videoElement.muted;
+        
+        // Update the icon and text based on muted state
+        if (videoElement.muted) {
+          audioIcon.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBvbHlnb24gcG9pbnRzPSIxMSA1IDYgOSAyIDkgMiAxNSA2IDE1IDExIDE5IDExIDUiPjwvcG9seWdvbj48cGF0aCBkPSJNMTUuNTQgOC40NkE1IDUgMCAwIDEgMTkgMTNhNSA1IDAgMCAxLTMuNDYgNC41NCI+PC9wYXRoPjxwYXRoIGQ9Ik0xOS4wNyA0LjkzYTEwIDEwIDAgMCAxIDAgMTQuMTQiPjwvcGF0aD48L3N2Zz4=";
+          audioControls.querySelector('span').textContent = "Turn On Audio";
+        } else {
+          audioIcon.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBvbHlnb24gcG9pbnRzPSIxMSA1IDYgOSAyIDkgMiAxNSA2IDE1IDExIDE5IDExIDUiPjwvcG9seWdvbj48cGF0aCBkPSJNMjMgOWwtOCA2aDRsOC02aC00eiI+PC9wYXRoPjxwYXRoIGQ9Ik0yMyAxNWwtOCA2aDRsOC02aC00eiI+PC9wYXRoPjwvc3ZnPg==";
+          audioControls.querySelector('span').textContent = "Turn Off Audio";
+        }
       });
       
       let scene, camera, renderer;
@@ -329,9 +376,14 @@
           renderer.render(scene, camera);
         });
 
+        // Initially hide audio controls
+        audioControls.style.display = 'none';
+        
         // Try to start the video - if it fails, show the play button
         videoElement.play().then(() => {
           console.log('Video autoplay started successfully');
+          // Show audio controls after successful autoplay
+          audioControls.style.display = 'flex';
         }).catch(error => {
           console.error('Video autoplay failed:', error);
           // Show the play button if autoplay is not allowed
